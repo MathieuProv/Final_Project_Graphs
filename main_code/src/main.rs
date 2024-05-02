@@ -2,23 +2,17 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::collections::VecDeque;
 use std::time::Instant;
+use rand::{thread_rng, Rng};
 
 fn main() {
+    //Dataset for frenh Twitch users
     let l_fr = 6549;
-
     let mut list_of_edges_fr = read_file("musae_FR_edges.txt");
     list_of_edges_fr.sort();
 
-
     let fr_graph = Graph::create_undirected(l_fr, &list_of_edges_fr);
 
-    let start_time = Instant::now(); 
-
-    println!("{:?}", computation_6_degrees(&fr_graph));
-
-    let end_time = Instant::now();
-
-    println!("Elapsed time: {:?}", end_time - start_time);
+    print_results(&fr_graph, "France");
 }
 
 
@@ -34,6 +28,17 @@ fn read_file(path: &str) -> Vec<(i32, i32)> {
         list_of_edges.push((v[0], v[1]));
     }
     return list_of_edges
+}
+
+fn print_results(graph: &Graph, country: &str) {
+    let start_time = Instant::now(); 
+
+    print!("{}\n", country);
+    println!("Average of degrees of seperation between two nodes: {:.5}\nNumber of trips violating the rule: {}", computation_6_degrees(graph).0, computation_6_degrees(graph).1);
+
+    let end_time = Instant::now();
+
+    println!("Elapsed time: {:?}", end_time - start_time);
 }
 
 
@@ -82,34 +87,33 @@ impl Graph {
 
 
 fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 { // ISSUE : we're computing too much
-    let mut visited = vec![false; graph.vertices];
-    let mut distance: Vec<i32> = vec![0;graph.vertices];
+    let mut distance: Vec<Option<i32>> = vec![None;graph.vertices];
     let mut queue = VecDeque::new();
 
     queue.push_back(start as usize);
-    visited[start as usize] = true;
+    distance[start as usize] = Some(0);
     
     while let Some(v) = queue.pop_front() {
         if v == terminal as usize {
-            return distance[v];
+            return distance[terminal as usize].unwrap() as i32;
         }
         for u in graph.adjacency_list[v].iter() {
-            if !visited[*u as usize] {
-                distance[*u as usize] = distance[v] + 1;
+            if let None = distance[*u as usize] {
+                distance[*u as usize] = Some(distance[v].unwrap() + 1);
                 queue.push_back(*u as usize);
             }
         }
     }
-    return distance[terminal as usize]
+    return distance[terminal as usize].unwrap() as i32
 }
 
 fn computation_6_degrees(graph: &Graph) -> (f64, i32) {
-    let len = graph.vertices;
+    let len: i32 = graph.vertices as i32;
     let mut res: f64 = 0.0;
     let mut rule_violation = 0;
     for v in 0..len {
         let vector = v as i32;
-        let terminal_vector = 100;
+        let terminal_vector: i32 = thread_rng().gen_range(0..len);
         res += distance_2_vertices(vector, terminal_vector, graph) as f64;
         if distance_2_vertices(vector, terminal_vector, graph) > 6 {
             rule_violation += 1;

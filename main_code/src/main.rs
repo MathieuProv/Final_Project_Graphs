@@ -6,7 +6,7 @@ use std::time::Instant;
 fn main() {
     let l_fr = 6549;
 
-    let mut list_of_edges_fr = read_file("musae_FR_edges.txt"); // (adjacency_list_fr, // , l_fr
+    let mut list_of_edges_fr = read_file("musae_FR_edges.txt");
     list_of_edges_fr.sort();
 
 
@@ -22,21 +22,18 @@ fn main() {
 }
 
 
-fn read_file(path: &str)/*, l:usize*/ -> Vec<(i32, i32)> { // (Vec<Vec<i32>>, Vec<(i32, i32)>)
+fn read_file(path: &str) -> Vec<(i32, i32)> {
     let data = File::open(path).expect("Failed to open file");
     let reader = BufReader::new(data).lines();
-    //let mut adjacency_list = vec![vec![];l];
     let mut list_of_edges: Vec<(i32, i32)> = vec![];
 
     for (_,line) in reader.enumerate() {
         let line_str = line.expect("Error reading");
         let v:Vec<i32> = line_str.trim().split(',').map(|s| s.parse::<i32>().unwrap()).collect();
 
-        //let v0_usize = v[0] as usize;
         list_of_edges.push((v[0], v[1]));
-        //adjacency_list[v0_usize].push(v[1]);
     }
-    return list_of_edges //adjacency_list, 
+    return list_of_edges
 }
 
 
@@ -85,24 +82,25 @@ impl Graph {
 
 
 fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 { // ISSUE : we're computing too much
-    let mut distance: Vec<Option<u32>> = vec![None;graph.vertices];
+    let mut visited = vec![false; graph.vertices];
+    let mut distance: Vec<i32> = vec![0;graph.vertices];
     let mut queue = VecDeque::new();
 
-    distance[start as usize] = Some(0);
     queue.push_back(start as usize);
+    visited[start as usize] = true;
     
     while let Some(v) = queue.pop_front() {
         if v == terminal as usize {
-            return distance[v].unwrap() as i32;
+            return distance[v];
         }
         for u in graph.adjacency_list[v].iter() {
-            if let None = distance[*u as usize] {
-                distance[*u as usize] = Some(distance[v].unwrap() + 1);
+            if !visited[*u as usize] {
+                distance[*u as usize] = distance[v] + 1;
                 queue.push_back(*u as usize);
             }
         }
     }
-    return distance[terminal as usize].unwrap() as i32
+    return distance[terminal as usize]
 }
 
 fn computation_6_degrees(graph: &Graph) -> (f64, i32) {

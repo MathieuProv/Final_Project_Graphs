@@ -1,42 +1,49 @@
 use std::fs::File;
 use std::io::{BufReader, BufRead};
+use std::collections::VecDeque;
+use std::time::Instant;
 
 fn main() {
     let l_fr = 6549;
-    let n_fr: usize = 122666;
-    let (adjacency_list_fr, list_of_edges_fr) = read_file("musae_FR_edges.txt", l_fr, n_fr);
 
-    let fr_graph = Graph{vertices: l_fr, edges: adjacency_list_fr};
+    let mut list_of_edges_fr = read_file("musae_FR_edges.txt"); // (adjacency_list_fr, // , l_fr
+    list_of_edges_fr.sort();
 
+
+    let fr_graph = Graph::create_undirected(l_fr, &list_of_edges_fr);
+
+    let start_time = Instant::now(); 
+
+    println!("{:?}", computation_6_degrees(&fr_graph));
+
+    let end_time = Instant::now();
+
+    println!("Elapsed time: {:?}", end_time - start_time);
 }
 
 
-fn read_file(path: &str, l:usize, n: usize) -> (Vec<Vec<i32>>, Vec<(i32, i32)>) {
+fn read_file(path: &str)/*, l:usize*/ -> Vec<(i32, i32)> { // (Vec<Vec<i32>>, Vec<(i32, i32)>)
     let data = File::open(path).expect("Failed to open file");
     let reader = BufReader::new(data).lines();
-    let mut adjacency_list = vec![vec![];l];
-    let mut list_of_edges: Vec<(i32, i32)> = vec![(0, 0); n];
+    //let mut adjacency_list = vec![vec![];l];
+    let mut list_of_edges: Vec<(i32, i32)> = vec![];
 
-    for (i,line) in reader.enumerate() {
+    for (_,line) in reader.enumerate() {
         let line_str = line.expect("Error reading");
         let v:Vec<i32> = line_str.trim().split(',').map(|s| s.parse::<i32>().unwrap()).collect();
-        
-        let v1 = v[0] as i32;
-        let v1_usize = v[0] as usize;
-        let v2 = v[1] as i32;
-        adjacency_list[v1_usize].push(v2);
-        list_of_edges[i] = (v1, v2);
-        
-    }
-    return (adjacency_list, list_of_edges)
-}
 
+        //let v0_usize = v[0] as usize;
+        list_of_edges.push((v[0], v[1]));
+        //adjacency_list[v0_usize].push(v[1]);
+    }
+    return list_of_edges //adjacency_list, 
+}
 
 
 #[derive(Debug)]
 struct Graph {
     vertices: usize,
-    edges: Vec<Vec<i32>>
+    adjacency_list: Vec<Vec<i32>>
 }
 
 
@@ -53,16 +60,16 @@ impl Graph {
     fn add_directed_edges(&mut self, edges: &Vec<(i32, i32)>) {
         for (u,v) in edges {
             let index = *u as usize;
-            self.edges[index].push(*v);
+            self.adjacency_list[index].push(*v);
         }
     }
     fn sort_graph_lists(&mut self) {
-        for l in self.edges.iter_mut() {
+        for l in self.adjacency_list.iter_mut() {
             l.sort();
         }
     }
     fn create_directed(n: usize, edges: &Vec<(i32, i32)>) -> Graph {
-        let mut g = Graph{vertices: n, edges:vec![vec![];n]};
+        let mut g = Graph{vertices: n, adjacency_list:vec![vec![];n]};
         g.add_directed_edges(edges);
         g.sort_graph_lists();
         g                                        
@@ -76,8 +83,39 @@ impl Graph {
     }
 }
 
-// Créer une fonction qui fait le chemin entre 2 noeuds
 
-// Créer une fonction pour calculer la moyenne des chemins pour tous les noeuds
+fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 { // ISSUE : we're computing too much
+    let mut distance: Vec<Option<u32>> = vec![None;graph.vertices];
+    let mut queue = VecDeque::new();
 
-// Comparer les différentes moyennes entre les nationalités 
+    distance[start as usize] = Some(0);
+    queue.push_back(start as usize);
+    
+    while let Some(v) = queue.pop_front() {
+        if v == terminal as usize {
+            return distance[v].unwrap() as i32;
+        }
+        for u in graph.adjacency_list[v].iter() {
+            if let None = distance[*u as usize] {
+                distance[*u as usize] = Some(distance[v].unwrap() + 1);
+                queue.push_back(*u as usize);
+            }
+        }
+    }
+    return distance[terminal as usize].unwrap() as i32
+}
+
+fn computation_6_degrees(graph: &Graph) -> (f64, i32) {
+    let len = graph.vertices;
+    let mut res: f64 = 0.0;
+    let mut rule_violation = 0;
+    for v in 0..len {
+        let vector = v as i32;
+        let terminal_vector = 100;
+        res += distance_2_vertices(vector, terminal_vector, graph) as f64;
+        if distance_2_vertices(vector, terminal_vector, graph) > 6 {
+            rule_violation += 1;
+        }
+    }
+    return (res / ((len as f64)), rule_violation)
+}

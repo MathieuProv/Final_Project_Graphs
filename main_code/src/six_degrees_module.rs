@@ -43,7 +43,7 @@ pub mod six_degrees {
         }
     }
 
-    pub fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 { // ISSUE : we're computing too much
+    pub fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 {
         let mut distance: Vec<Option<i32>> = vec![None;graph.vertices];
         let mut queue = VecDeque::new();
 

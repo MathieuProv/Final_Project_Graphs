@@ -1,6 +1,6 @@
 pub mod six_degrees {
     use std::collections::VecDeque;
-    use rand::{thread_rng, Rng};
+    use rand::Rng;
 
     #[derive(Debug)]
     pub struct Graph {
@@ -43,25 +43,25 @@ pub mod six_degrees {
         }
     }
 
-    pub fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 {
-        let mut distance: Vec<Option<i32>> = vec![None;graph.vertices];
+    pub fn distance_2_vertices(start: i32, terminal: usize, graph: &Graph) -> i32 {
+        let mut distance: Vec<i32> = vec![-1;graph.vertices];
         let mut queue = VecDeque::new();
 
         queue.push_back(start as usize);
-        distance[start as usize] = Some(0);
+        distance[start as usize] = 0;
     
         while let Some(v) = queue.pop_front() {
             if v == terminal as usize {
-                return distance[terminal as usize].unwrap() as i32;
+                return distance[terminal as usize] as i32;
             }
             for u in graph.adjacency_list[v].iter() {
-                if let None = distance[*u as usize] {
-                    distance[*u as usize] = Some(distance[v].unwrap() + 1);
+                if distance[*u as usize] == -1 {
+                    distance[*u as usize] = distance[v]+ 1;
                     queue.push_back(*u as usize);
                 }
             }
         }
-        return distance[terminal as usize].unwrap() as i32
+        return distance[terminal as usize] as i32
     }
 
     pub fn computation_6_degrees(graph: &Graph) -> (f64, i32) {
@@ -71,13 +71,15 @@ pub mod six_degrees {
 
         for v in 0..len {
             let vector = v as i32;
-            let terminal_vector: i32 = thread_rng().gen_range(0..len);
-            let distance = distance_2_vertices(vector, terminal_vector, graph);
-            sum += distance as f64;
-            if distance > 6 {
-                rule_violation += 1;
+            for _ in 0..10 {
+                let u = rand::thread_rng().gen_range(0..graph.vertices);
+                let distance = distance_2_vertices(vector, u, graph);                
+                sum += distance as f64;
+                if distance > 6 {
+                    rule_violation += 1;
+                }
             }
         }
-        return (sum / ((len as f64)), rule_violation)
+        return (sum / (len as f64 * 10.0), rule_violation)
     }
 }

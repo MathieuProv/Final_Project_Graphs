@@ -11,7 +11,7 @@ use six_degrees_module::six_degrees;
 fn main() {
     //Dataset for French Twitch users
     let graph_fr = build_graph(6549, "musae_FR_edges.txt"); 
-    print_results(&graph_fr, "France");
+    print_results(&graph_fr, "French");
 
     //Dataset for English Twitch users
     let graph_en = build_graph(7126, "musae_ENGB_edges.txt");
@@ -62,14 +62,14 @@ fn print_results(graph: &six_degrees::Graph, nationality: &str) {
     let average = six_degrees::computation_6_degrees(graph).0;
     let errors = six_degrees::computation_6_degrees(graph).1 as f64;
 
-    print!("{}\n\n", nationality);
+    print!("{}\n", nationality);
     println!("Average of degrees of seperation between two nodes: {:.5}", average);
     println!("The 6 degrees seperation rule is respected {:.2}% of the time", ((graph.vertices as f64) - errors) / (graph.vertices as f64) * 100.0);
     println!("Number of trips violating the rule: {}", errors as i32);
 
     let end_time = Instant::now();
 
-    println!("Elapsed time: {:?}", end_time - start_time);
+    println!("Elapsed time: {:?}\n", end_time - start_time);
 }
 
 #[test]
@@ -82,8 +82,8 @@ fn check_distance_2_vertices() {
 
 #[test]
 fn check_computation_6_degrees() {
-    let adjacency_list_test = vec![vec![1, 2], vec![0, 2, 4], vec![0, 1, 3], vec![2, 4], vec![1, 3]];
-    let graph = six_degrees::Graph{vertices: 5, adjacency_list: adjacency_list_test};
+    let adjacency_list_test = vec![vec![1], vec![0, 2], vec![1, 3], vec![2, 4], vec![3, 5], vec![4, 6], vec![5, 7], vec![6]];
+    let graph = six_degrees::Graph{vertices: 8, adjacency_list: adjacency_list_test};
     let (accuracy, rule_violation) = six_degrees::computation_6_degrees(&graph);
     assert!(accuracy >= 0.0 && accuracy <= 6.0, "The accuracy is out of range");
     assert!(rule_violation >= 0 && rule_violation <= graph.vertices as i32, "The rule_violation number is out of range")

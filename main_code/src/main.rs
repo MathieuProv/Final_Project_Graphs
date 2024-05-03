@@ -4,8 +4,8 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::time::Instant;
 
-pub mod module;
-use module::six_degrees;
+pub mod six_degrees_module;
+use six_degrees_module::six_degrees;
 
 
 fn main() {
@@ -14,12 +14,25 @@ fn main() {
     print_results(&graph_fr, "France");
 
     //Dataset for English Twitch users
-    //let graph_en = build_graph(7126, "musae_ENGB_edges.txt");
-    //print_results(&graph_en, "English");
+    let graph_en = build_graph(7126, "musae_ENGB_edges.txt");
+    print_results(&graph_en, "English");
 
     //Dataset for Portugese Twitch users
     let graph_pt = build_graph(1912, "musae_PTBR_edges.txt");
-    print_results(&graph_pt, "Portugese")
+    print_results(&graph_pt, "Portugese");
+
+    let accuracy_fr = ((graph_fr.vertices as f64) - (six_degrees::computation_6_degrees(&graph_fr).1 as f64)) / (graph_fr.vertices as f64) * 100.0;
+    let accuracy_en = ((graph_en.vertices as f64) - (six_degrees::computation_6_degrees(&graph_en).1 as f64)) / (graph_en.vertices as f64) * 100.0;
+    let accuracy_pt = ((graph_pt.vertices as f64) - (six_degrees::computation_6_degrees(&graph_pt).1 as f64)) / (graph_pt.vertices as f64) * 100.0;
+
+    let min_value = if accuracy_fr <= accuracy_en && accuracy_fr <= accuracy_pt {
+        "French"
+    } else if accuracy_en <= accuracy_fr && accuracy_en <= accuracy_pt {
+        "English"
+    } else {
+        "Portuguese"
+    };
+    println!("The nationality respecting the least the rule of six degrees of seperation is {:?}", min_value);
 }
 
 
@@ -48,14 +61,11 @@ fn print_results(graph: &six_degrees::Graph, nationality: &str) {
     let start_time = Instant::now(); 
     let average = six_degrees::computation_6_degrees(graph).0;
     let errors = six_degrees::computation_6_degrees(graph).1 as f64;
-    let max = six_degrees::computation_6_degrees(graph).2;
-    let count_max = six_degrees::computation_6_degrees(graph).3;
 
     print!("{}\n\n", nationality);
     println!("Average of degrees of seperation between two nodes: {:.5}", average);
     println!("The 6 degrees seperation rule is respected {:.2}% of the time", ((graph.vertices as f64) - errors) / (graph.vertices as f64) * 100.0);
     println!("Number of trips violating the rule: {}", errors as i32);
-    println!("The longest trip is: {} and was made {} times\n", max, count_max);
 
     let end_time = Instant::now();
 

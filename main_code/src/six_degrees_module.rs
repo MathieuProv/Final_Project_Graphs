@@ -64,12 +64,11 @@ pub mod six_degrees {
         return distance[terminal as usize].unwrap() as i32
     }
 
-    pub fn computation_6_degrees(graph: &Graph) -> (f64, i32, i32, i32) {
+    pub fn computation_6_degrees(graph: &Graph) -> (f64, i32) {
         let len: i32 = graph.vertices as i32;
         let mut sum: f64 = 0.0;
         let mut rule_violation = 0;
-        let mut max = 0;
-        let mut count_max = 0;
+
         for v in 0..len {
             let vector = v as i32;
             let terminal_vector: i32 = thread_rng().gen_range(0..len);
@@ -77,11 +76,8 @@ pub mod six_degrees {
             sum += distance as f64;
             if distance > 6 {
                 rule_violation += 1;
-            } if distance > max {
-                max = distance;
-                count_max += 1;
             }
         }
-        return (sum / ((len as f64)), rule_violation, max, count_max)
+        return (sum / ((len as f64)), rule_violation)
     }
 }

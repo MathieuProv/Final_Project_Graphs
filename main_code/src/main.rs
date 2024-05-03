@@ -14,8 +14,8 @@ fn main() {
     print_results(&graph_fr, "France");
 
     //Dataset for English Twitch users
-    let graph_en = build_graph(7126, "musae_ENGB_edges.txt");
-    print_results(&graph_en, "English");
+    //let graph_en = build_graph(7126, "musae_ENGB_edges.txt");
+    //print_results(&graph_en, "English");
 
     //Dataset for Portugese Twitch users
     let graph_pt = build_graph(1912, "musae_PTBR_edges.txt");
@@ -44,17 +44,31 @@ fn build_graph(len: i32, text: &str) -> six_degrees::Graph {
     return six_degrees::Graph::create_undirected(len as usize, &list_of_edges);
 }
 
-fn print_results(graph: &six_degrees::Graph, country: &str) {
+fn print_results(graph: &six_degrees::Graph, nationality: &str) {
     let start_time = Instant::now(); 
     let average = six_degrees::computation_6_degrees(graph).0;
     let errors = six_degrees::computation_6_degrees(graph).1 as f64;
+    let max = six_degrees::computation_6_degrees(graph).2;
+    let count_max = six_degrees::computation_6_degrees(graph).3;
 
-    print!("{}\n\n", country);
+    print!("{}\n\n", nationality);
     println!("Average of degrees of seperation between two nodes: {:.5}", average);
     println!("The 6 degrees seperation rule is respected {:.2}% of the time", ((graph.vertices as f64) - errors) / (graph.vertices as f64) * 100.0);
-    println!("Number of trips violating the rule: {}\n", errors as i32);
+    println!("Number of trips violating the rule: {}", errors as i32);
+    println!("The longest trip is: {} and was made {} times\n", max, count_max);
 
     let end_time = Instant::now();
 
     println!("Elapsed time: {:?}", end_time - start_time);
 }
+
+#[test]
+fn check_distance_2_vertices() {
+
+}
+
+#[test]
+fn check_computation_6_degrees() {
+
+}
+

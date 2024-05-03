@@ -5,7 +5,7 @@ pub mod six_degrees {
     #[derive(Debug)]
     pub struct Graph {
         pub vertices: usize,
-        adjacency_list: Vec<Vec<i32>>
+        pub adjacency_list: Vec<Vec<i32>>
     }
 
     fn reverse_edges(list: Vec<(i32, i32)>) -> Vec<(i32, i32)> {
@@ -43,7 +43,7 @@ pub mod six_degrees {
         }
     }
 
-    fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 { // ISSUE : we're computing too much
+    pub fn distance_2_vertices(start: i32, terminal: i32, graph: &Graph) -> i32 { // ISSUE : we're computing too much
         let mut distance: Vec<Option<i32>> = vec![None;graph.vertices];
         let mut queue = VecDeque::new();
 

@@ -74,11 +74,18 @@ fn print_results(graph: &six_degrees::Graph, nationality: &str) {
 
 #[test]
 fn check_distance_2_vertices() {
-
+    let adjacency_list_test = vec![vec![1, 2], vec![0, 2, 4], vec![0, 1, 3], vec![2, 4], vec![1, 3]];
+    let graph = six_degrees::Graph{vertices: 5, adjacency_list: adjacency_list_test};
+    let test = six_degrees::distance_2_vertices(0, 4, &graph);
+    assert_eq!(test, 2, "The computed distance is wrong")
 }
 
 #[test]
 fn check_computation_6_degrees() {
-
+    let adjacency_list_test = vec![vec![1, 2], vec![0, 2, 4], vec![0, 1, 3], vec![2, 4], vec![1, 3]];
+    let graph = six_degrees::Graph{vertices: 5, adjacency_list: adjacency_list_test};
+    let (accuracy, rule_violation) = six_degrees::computation_6_degrees(&graph);
+    assert!(accuracy >= 0.0 && accuracy <= 6.0, "The accuracy is out of range");
+    assert!(rule_violation >= 0 && rule_violation <= graph.vertices as i32, "The rule_violation number is out of range")
 }
 
